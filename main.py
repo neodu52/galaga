@@ -17,7 +17,6 @@ highscore = 0
 slow_active = False
 slow_start_time = 0
 last_slow_spawn = 0
-
 slow_item = None 
 
 def load_highscore():
@@ -48,19 +47,17 @@ pyxel.init(160,120, title="Galaga")
 pyxel.load("star_ship.pyxres")
 
 def ship_move(x_ship, y_ship):
-    
     speed_factor = 0.5 if slow_active else 1
 
     if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT):
-        x_ship += vx_ship
+        x_ship += vx_ship * speed_factor
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT):
-        x_ship -= vx_ship
+        x_ship -= vx_ship * speed_factor
     if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_UP):
-        y_ship -= vy_ship
+        y_ship -= vy_ship * speed_factor
     if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN):
-        y_ship += vy_ship
-    if pyxel.btnr(pyxel.GAMEPAD1_BUTTON_B) or pyxel.btnr(pyxel.KEY_KP_ENTER):
-        pause()
+        y_ship += vy_ship * speed_factor
+
     return x_ship, y_ship
 
 def shoot_create(x,y, shoot):
@@ -70,9 +67,9 @@ def shoot_create(x,y, shoot):
 
 def shoot_move(shoot):
     speed_factor = 0.5 if slow_active else 1
-    global tir
-    for tir in shoot:
-        tir[1] -= 3
+
+    for tir in shoot[:]:
+        tir[1] -= 3 * speed_factor
         if tir[1] < -8:
             shoot.remove(tir)
     return shoot
@@ -84,11 +81,13 @@ def enemies_create(enemies):
 
 def enemies_move(enemies):
     speed_factor = 0.5 if slow_active else 1
-    for ene in enemies:
-        ene[1] += 3
+
+    for ene in enemies[:]:
+        ene[1] += 3 * speed_factor
         if ene[1] > 120:
             enemies.remove(ene)
     return enemies
+
 
 def slow_motion_start():
     global slow_active, slow_start_time
@@ -129,6 +128,7 @@ def restart_game():
 
 def update():
     global x_ship, y_ship, shoot, tim, enemies
+    global slow_item, slow_active, slow_start_time, last_slow_spawn, mode, score
     if pyxel.btnp(pyxel.KEY_Q):
         pyxel.quit()
 
@@ -174,7 +174,11 @@ def draw():
         pyxel.text(25, 70, "Appuie sur R pour recommencer", 7)
         pyxel.text(20, 90, f"Highscore : {highscore}", 10)
         return
-    
+    if slow_item is not None:
+        pyxel.circ(slow_item[0], slow_item[1], 4, 8)
+    if slow_active:
+        pyxel.text(60, 5, "SLOW-MO !", 7)
+
     pyxel.blt(x_ship, y_ship, 0, 0, 0, 8, 8)
     for tir in shoot:
         pyxel.blt(tir[0], tir[1],0,10, 0, 3, 7)
