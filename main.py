@@ -4,7 +4,7 @@ import math
 import random as rd
 import music
 import json
-import os
+import os 
 
 x_ship = 80
 y_ship = 60
@@ -18,6 +18,9 @@ slow_active = False
 slow_start_time = 0
 last_slow_spawn = 0
 slow_item = None 
+boss = False
+boss_hp = 50
+boss_spawn_time = 30
 
 def load_highscore():
     global highscore
@@ -77,6 +80,13 @@ def shoot_move(shoot):
 def enemies_create(enemies):
     if pyxel.frame_count%15 == 0:
         enemies.append([rd.randint(0,160), 0])
+        
+    if boss is not None:
+        return enemies  # stop spawn quand boss présent
+
+    if pyxel.frame_count % 15 == 0:
+        enemies.append([rd.randint(0, 160 - 8), -8])
+
     return enemies
 
 def enemies_move(enemies):
@@ -97,7 +107,7 @@ def slow_motion_start():
 
 def check_collisions(shoot, enemies, x_ship, y_ship):
     """fct pour gerer les colision avec les enemeies"""
-    global mode, score, highscore
+    global mode, score, highscore, boss, boss_hp
     # sa c la collison tir avec enemie
     for tir in shoot:
         for ene in enemies:
@@ -174,6 +184,7 @@ def draw():
         pyxel.text(25, 70, "Appuie sur R pour recommencer", 7)
         pyxel.text(20, 90, f"Highscore : {highscore}", 10)
         return
+
     if slow_item is not None:
         pyxel.circ(slow_item[0], slow_item[1], 4, 8)
     if slow_active:
@@ -187,8 +198,7 @@ def draw():
     pyxel.text(30, 10, f"Score: {score}", 11)
     pyxel.text(10, 20, f"Highscore: {highscore}", 10)
     for ene in enemies:
-        pyxel.rect(ene[0], ene[1], 5, 5, 9)
-    frame = print(pyxel.frame_count%30)
+        pyxel.blt(ene[0], ene[1],0, 0, 16, 8, 8)
 
 load_highscore()
 pyxel.run(update, draw)
